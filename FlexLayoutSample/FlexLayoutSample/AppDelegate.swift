@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  FlexLayoutSample
 //
-//  Created by Nam Jun Lee on 2023/05/10.
+//  Created by 이남준 on 2023/05/11.
 //
 
 import UIKit

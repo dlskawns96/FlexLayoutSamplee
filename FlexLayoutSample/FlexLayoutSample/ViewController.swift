@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  FlexLayoutSample
 //
-//  Created by Nam Jun Lee on 2023/05/10.
+//  Created by 이남준 on 2023/05/11.
 //
 
 import UIKit
@@ -11,55 +11,73 @@ import FlexLayout
 import PinLayout
 
 class ViewController: UIViewController {
+
+    let contentView = ViewControllerView()
     
     override func loadView() {
-        self.view = DealiNavigationBar()
+        self.view = contentView
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.view.backgroundColor = .red
+        self.contentView.button.addTarget(self, action: #selector(self.buttonTapped), for: .touchUpInside)
     }
-
+    
+    @objc func buttonTapped() {
+        self.contentView.navigationBar.flex.markDirty()
+        if self.contentView.isNavigationBarHidden {
+//            self.contentView.navigationBar.statusBar.flex.height(56.0)
+            self.contentView.navigationBar.flex.height(200.0)
+        } else {
+//            self.contentView.navigationBar.statusBar.flex.height(0.0)
+            self.contentView.navigationBar.flex.height(0.0)
+        }
+        
+        self.contentView.isNavigationBarHidden.toggle()
+        self.contentView.flex.markDirty()
+        self.contentView.setNeedsLayout()
+        UIView.animate(withDuration: 0.5) {
+            self.contentView.layoutIfNeeded()
+        }
+    }
 }
 
-final class DealiNavigationBar: UIView {
-    private let rootFlexContainer = UIView()
+final class ViewControllerView: UIView {
+    private var scrollView = UIScrollView()
+    private var flexContainer = UIView()
     
-    let label = UILabel()
-    let view = UIView()
+    var button = UIButton()
+    
+    var navigationBar = DealiNavigationBar()
+    var isNavigationBarHidden = false
     
     init() {
         super.init(frame: .zero)
-        self.backgroundColor = .blue
         
-        self.label.text = "HELLO WORLD"
-        self.label.backgroundColor = .blue
+        self.backgroundColor = .white
         
-        self.view.backgroundColor = .yellow
+        self.addSubview(self.scrollView)
+        self.scrollView.bounces = true
+        self.scrollView.addSubview(self.flexContainer)
+        self.button.backgroundColor = .brown
         
-        self.rootFlexContainer.flex
-            .direction(.row).padding(10.0)
+        self.flexContainer.flex
+            .alignItems(.center)
             .define {
-                $0.addItem(self.label)
-                $0.addItem(self.view).width(50.0).height(50.0).marginLeft(20.0)
+                $0.addItem(self.navigationBar).height(200.0).alignSelf(.stretch)
+                $0.addItem(self.button).size(100.0)
             }
-        
-        self.addSubview(self.rootFlexContainer)
     }
     
-    
-      override func layoutSubviews() {
-          super.layoutSubviews()
-
-          // Layout the flexbox container using PinLayout
-          // NOTE: Could be also layouted by setting directly rootFlexContainer.frame
-          rootFlexContainer.pin.top().horizontally().margin(pin.safeArea)
-
-          // Then let the flexbox container layout itself
-          rootFlexContainer.flex.layout(mode: .adjustHeight)
-      }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        self.scrollView.pin.all()
+        self.flexContainer.pin.top().left().right()
+        self.flexContainer.flex.layout(mode: .adjustHeight)
+        self.scrollView.contentSize = self.flexContainer.frame.size
+    }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
